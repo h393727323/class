@@ -1,0 +1,295 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 20px 20px;  /* 修改这里：移除顶部内边距 */
+}
+
+/* 头部样式 */
+header {
+    text-align: center;
+    padding: 40px 0;
+    background-color: #f8f9fa;
+    margin-bottom: 40px;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: 0;  /* 添加这行确保顶部无间距 */
+}
+
+header > * {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #0066cc;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #004499;
+}
+
+/* 主要内容样式 */
+section {
+    margin-bottom: 60px;
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 2em;
+    color: #2c3e50;
+    margin-bottom: 30px;
+}
+
+/* 章节卡片样式 */
+.chapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.chapter-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.chapter-card:hover {
+    transform: translateY(-5px);
+}
+
+/* 资源列表样式 */
+.resource-list {
+    list-style: none;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.resource-list li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.resource-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #0066cc;
+}
+
+/* 页脚样式 */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    border-top: 1px solid #eee;
+    margin-top: 40px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    nav ul {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .chapter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 新增样式 */
+.subtitle {
+    font-size: 1.2em;
+    color: #666;
+    margin-top: 10px;
+}
+
+.preparation-content {
+    display: grid;
+    gap: 30px;
+}
+
+.must-have, .full-preparation {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+}
+
+.checklist li {
+    margin-bottom: 15px;  /* 减小间距 */
+    padding-left: 25px;
+    position: relative;
+}
+
+/* 添加新的样式用于简单列表项 */
+.checklist li:nth-child(n+4) {  /* 第4项开始的简单列表项 */
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 10px;
+}
+
+.detail-box {
+    background: #f8f9fa;
+    padding: 12px;  /* 稍微减小内边距 */
+    border-radius: 6px;
+    margin-top: 8px;  /* 减小上边距 */
+}
+
+.detail-box a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.detail-box a:hover {
+    text-decoration: underline;
+}
+
+h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.deployment-content ul {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.deployment-content li {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.deployment-content li::before {
+    content: "•";
+    position: absolute;
+    left: -20px;
+    color: #0066cc;
+}
+
+.detail-box ol {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.detail-box ol li {
+    position: relative;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.detail-box ol li::before {
+    content: counter(list-item) ".";
+    position: absolute;
+    left: 0;
+    color: #666;
+}
+
+.detail-box p {
+    margin-bottom: 5px;
+}
+
+/* 响应式调整 */
+@media (min-width: 768px) {
+    .preparation-content {
+        grid-template-columns: 1fr 2fr;
+    }
+}
+/* 图标样式 */
+h1 i, h2 i {
+    margin-right: 12px;
+}
+
+/* 主标题毕业帽图标 */
+h1 i.fa-graduation-cap {
+    color: #8B9DA5;  /* 莫兰迪蓝灰色 */
+}
+
+/* 课前准备清单图标 */
+h2 i.fa-list-check {
+    color: #A78B83;  /* 莫兰迪棕色 */
+}
+
+/* AI编程笔记本图标 */
+h2 i.fa-laptop-code {
+    color: #8B9B8B;  /* 莫兰迪绿灰色 */
+}
+
+/* 部署上线火箭图标 */
+h2 i.fa-rocket {
+    color: #B4A3A3;  /* 莫兰迪玫瑰色 */
+}
+h1 i {
+    font-size: 0.9em;
+}
+
+h2 i {
+    font-size: 0.85em;
+}
+
+/* 主标题机器人图标 */
+h1 i.fa-robot {
+    color: #3498db;  /* 科技蓝 */
+}
+
+/* 课前准备清单图标 */
+h2 i.fa-clipboard-list {
+    color: #27ae60;  /* 清新绿 */
+}
+
+/* AI编程代码图标 */
+h2 i.fa-code {
+    color: #9b59b6;  /* 科技紫 */
+}
+
+/* 部署上线火箭图标 */
+h2 i.fa-rocket {
+    color: #e74c3c;  /* 活力红 */
+}
