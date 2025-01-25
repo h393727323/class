@@ -293,3 +293,67 @@ h2 i.fa-code {
 h2 i.fa-rocket {
     color: #e74c3c;  /* 活力红 */
 }
+/* 内容卡片样式 */
+.content-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.content-card:hover {
+    transform: translateY(-4px);
+}
+
+.card-header {
+    padding: 20px 24px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-number {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #839788;  /* 莫兰迪绿 */
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.2em;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+.card-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.card-body li {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bullet {
+    color: #917c6f;  /* 莫兰迪棕 */
+}
+
+/* 响应式布局 */
+@media (min-width: 768px) {
+    .basics-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+    }
+}
