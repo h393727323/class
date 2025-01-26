@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek API 测试</title>
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            align-items: flex-start; /* 添加顶部对齐 */
+        }
+        .left-panel {
+            flex: 2;
+            position: sticky;
+            top: 20px; /* 保持顶部对齐 */
+        }
+        .right-panel {
+            flex: 1;
+        }
+        .form-group {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+        }
+        button {
+            background-color: #E87A90;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%; /* 按钮宽度调整 */
+        }
+        button:hover {
+            background-color: #D05A6E;
+        }
+
+        #result {
+            padding: 20px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            white-space: pre-wrap;
+            min-height: 500px;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+        .prompt-examples {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        .prompt-examples span {
+            color: #666;
+        }
+        .prompt-link {
+            display: inline-block; /* 改为内联块级元素 */
+            margin: 4px 8px 4px 0; /* 调整边距 */
+            color: #B5495B;
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .prompt-link:hover {
+            background-color: rgba(229, 144, 162, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>DeepSeek API 测试</h1>
+    <div class="container">
+        <div class="left-panel">
+            <div id="result">
+                <!-- AI输出将显示在这里 -->
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="form-group">
+                <label for="apiKey">API Key:</label>
+                <input type="text" id="apiKey" placeholder="输入你的 DeepSeek API Key">
+            </div>
+            <div class="form-group">
+                <label for="message">输入消息:</label>
+                <textarea id="message" rows="4" placeholder="输入你想发送给 AI 的消息"></textarea>
+                <div class="prompt-examples">
+                    <span>示例：</span>
+                    <a href="#" class="prompt-link" data-prompt="帮我写一封请假邮件，需要请3天假去外地处理个人事务">请假邮件</a>
+                    <a href="#" class="prompt-link" data-prompt="推荐一些适合在办公室久坐人群的简单伸展运动">伸展运动</a>
+                    <a href="#" class="prompt-link" data-prompt="帮我制定一个为期一周的健康饮食计划，要求低脂高蛋白">饮食计划</a>
+                    <a href="#" class="prompt-link" data-prompt="如何提高工作效率？请给出具体可执行的建议">效率提升</a>
+                    <a href="#" class="prompt-link" data-prompt="帮我写一个简短的周报模板，包含本周完成工作和下周计划">周报模板</a>
+                    <a href="#" class="prompt-link" data-prompt="推荐5本职场必读的经典书籍，并简述它们的核心观点">书籍推荐</a>
+                    <a href="#" class="prompt-link" data-prompt="请帮我写一个简单的Python爬虫程序">爬虫程序</a>
+                    <a href="#" class="prompt-link" data-prompt="如何准备一场成功的工作汇报演讲？">演讲技巧</a>
+                </div>
+                <div style="text-align: right; margin-top: 16px;">
+                    <button onclick="callAPI()">发送请求</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 添加input事件监听实时保存API Key
+        document.getElementById('apiKey').addEventListener('input', function() {
+            localStorage.setItem('deepseek_api_key', this.value);
+        });
+
+        // 页面加载时恢复保存的 API Key
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedApiKey = localStorage.getItem('deepseek_api_key');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+            }
+        });
+
+        async function callAPI() {
+            const apiKey = document.getElementById('apiKey').value;
+            const message = document.getElementById('message').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!apiKey || !message) {
+                resultDiv.innerHTML = '<span class="error">请填写 API Key 和消息内容</span>';
+                return;
+            }
+
+            resultDiv.textContent = '正在请求中...';
+
+            try {
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-chat",
+                        messages: [
+                            {"role": "system", "content": "You are a helpful assistant"},
+                            {"role": "user", "content": message}
+                        ],
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resultDiv.textContent = `API 调用成功！\n\nAI 回复：\n${data.choices[0].message.content}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">API 调用失败：${error.message}</span>`;
+            }
+        }
+
+        // 添加示例 prompt 点击处理函数
+        document.querySelectorAll('.prompt-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const prompt = e.target.getAttribute('data-prompt');
+                document.getElementById('message').value = prompt;
+            });
+        });
+    </script>
+</body>
+</html>
