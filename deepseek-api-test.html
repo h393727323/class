@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepSeek API 测试</title>
+    <title>DeepSeek-R1 深度思考接口测试</title>
     <style>
         body {
             max-width: 1200px;
@@ -12,16 +13,23 @@
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
         }
+        h1 {
+           word-wrap: break-word; /* 旧标准，用于较旧的浏览器 */
+           overflow-wrap: break-word; /* 新标准 */
+        }
         .container {
             display: flex;
             gap: 20px;
             margin-top: 20px;
-            align-items: flex-start; /* 添加顶部对齐 */
+            align-items: flex-start;
         }
         .left-panel {
             flex: 2;
             position: sticky;
-            top: 20px; /* 保持顶部对齐 */
+            top: 20px;
+            max-width: 800px;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
         }
         .right-panel {
             flex: 1;
@@ -63,7 +71,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease;
-            width: 100%; /* 按钮宽度调整 */
+            width: 100%;
         }
         button:hover {
             background-color: #D05A6E;
@@ -75,8 +83,18 @@
             background: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
             min-height: 500px;
+            box-sizing: border-box;
         }
+         #result pre {
+           overflow-x: auto;
+          max-width: 100%;
+           box-sizing: border-box;
+        }
+
         .error {
             color: #e74c3c;
             font-weight: 500;
@@ -89,8 +107,8 @@
             color: #666;
         }
         .prompt-link {
-            display: inline-block; /* 改为内联块级元素 */
-            margin: 4px 8px 4px 0; /* 调整边距 */
+            display: inline-block;
+            margin: 4px 8px 4px 0;
             color: #B5495B;
             text-decoration: none;
             padding: 4px 8px;
@@ -103,7 +121,7 @@
     </style>
 </head>
 <body>
-    <h1>DeepSeek API 测试</h1>
+    <h1>DeepSeek-R1 深度思考接口测试</h1>
     <div class="container">
         <div class="left-panel">
             <div id="result">
@@ -121,17 +139,13 @@
                 <textarea id="message" rows="4" placeholder="输入你想发送给 AI 的消息"></textarea>
                 <div class="prompt-examples">
                     <span>示例：</span>
-                    <a href="#" class="prompt-link" data-prompt="帮我写一封请假邮件，需要请3天假去外地处理个人事务">请假邮件</a>
-                    <a href="#" class="prompt-link" data-prompt="推荐一些适合在办公室久坐人群的简单伸展运动">伸展运动</a>
-                    <a href="#" class="prompt-link" data-prompt="帮我制定一个为期一周的健康饮食计划，要求低脂高蛋白">饮食计划</a>
-                    <a href="#" class="prompt-link" data-prompt="如何提高工作效率？请给出具体可执行的建议">效率提升</a>
-                    <a href="#" class="prompt-link" data-prompt="帮我写一个简短的周报模板，包含本周完成工作和下周计划">周报模板</a>
-                    <a href="#" class="prompt-link" data-prompt="推荐5本职场必读的经典书籍，并简述它们的核心观点">书籍推荐</a>
-                    <a href="#" class="prompt-link" data-prompt="请帮我写一个简单的Python爬虫程序">爬虫程序</a>
-                    <a href="#" class="prompt-link" data-prompt="如何准备一场成功的工作汇报演讲？">演讲技巧</a>
+                    <a href="#" class="prompt-link" data-prompt="9.11 and 9.8, which is greater?">数值比较</a>
+                    <a href="#" class="prompt-link" data-prompt="How many Rs are there in the word 'strawberry'?">字母计数</a>
+                    <a href="#" class="prompt-link" data-prompt="请从哲学、物理学和神经科学三个维度分析人类意识的本质">意识本质分析</a>
+                    <a href="#" class="prompt-link" data-prompt="详细推导区块链技术对传统金融体系的冲击路径和应对策略">区块链金融影响</a>
                 </div>
                 <div style="text-align: right; margin-top: 16px;">
-                    <button onclick="callAPI()">发送请求</button>
+                    <button onclick="callR1API()">发送请求</button>
                 </div>
             </div>
         </div>
@@ -151,7 +165,7 @@
             }
         });
 
-        async function callAPI() {
+        async function callR1API() {
             const apiKey = document.getElementById('apiKey').value;
             const message = document.getElementById('message').value;
             const resultDiv = document.getElementById('result');
@@ -171,12 +185,11 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "deepseek-chat",
+                        model: "deepseek-reasoner",
                         messages: [
-                            {"role": "system", "content": "You are a helpful assistant"},
-                            {"role": "user", "content": message}
+                            { role: "user", content: message }
                         ],
-                        stream: false
+                        max_tokens: 4096 // 设置最大输出 tokens
                     })
                 });
 
@@ -185,7 +198,15 @@
                 }
 
                 const data = await response.json();
-                resultDiv.textContent = `API 调用成功！\n\nAI 回复：\n${data.choices[0].message.content}`;
+                const reasoningContent = data.choices[0].message.reasoning_content;
+                const finalContent = data.choices[0].message.content;
+
+                resultDiv.innerHTML = `
+                    <h3>思维链内容：</h3>
+                    <pre>${reasoningContent}</pre>
+                    <h3>最终回答：</h3>
+                    <pre>${finalContent}</pre>
+                `;
             } catch (error) {
                 resultDiv.innerHTML = `<span class="error">API 调用失败：${error.message}</span>`;
             }
