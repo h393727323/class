@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定时拍照</title>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .page-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        .camera-section {
+            flex: 0 0 640px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        #videoElement {
+            width: 100%;
+            height: 480px;
+            background-color: #666;
+            position: relative;
+        }
+        #photoGallery {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 600px;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .gallery img {
+            width: 100%;
+            height: auto;
+            max-width: 100%;  /* 改为百分比适应容器 */
+            margin: 0 auto;
+            border-radius: 4px;  /* 添加圆角 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);  /* 添加阴影 */
+        }
+        .gallery-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .photo-time {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            padding: 4px;
+            background: #f5f5f5;
+            border-radius: 2px;
+        }
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #instantSnap {
+            margin-left: auto;
+        }
+        /* 通用按钮样式 */
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px; /* 大圆角 */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* 开始按钮 */
+        #startButton {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* 停止按钮 */
+        #stopButton {
+            background: #f44336;
+            color: white;
+        }
+
+        /* 立即拍照按钮 */
+        #instantSnap {
+            background: #2196F3;
+            color: white;
+            margin-left: auto;
+        }
+
+        /* 悬停效果 */
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 点击效果 */
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* 禁用状态 */
+        button:disabled {
+            background: #cccccc !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">智能定时拍照系统</h1>
+        <div class="content-wrapper">
+            <div class="camera-section">
+                <h2 class="section-title">实时预览</h2>
+                <video id="videoElement" autoplay style="position: relative;"></video>
+                <div class="controls">
+                    <button id="startButton">开始拍照</button>
+                    <button id="stopButton">停止拍照</button>
+                    <span id="countdown" style="margin-left: 15px; color: #666; font-size: 14px;"></span>
+                    <button id="instantSnap" style="margin-left: auto;">立刻拍照</button>
+                </div>
+            </div>
+            <div id="photoGallery">
+                <h2 class="section-title">拍照记录</h2>
+                <div class="gallery"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 摄像头访问和拍照功能
+        const videoElement = document.getElementById('videoElement');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const gallery = document.querySelector('.gallery');
+        let captureInterval;
+        let countdownInterval;
+        let secondsRemaining = 0;
+
+        // 初始化摄像头
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error('摄像头访问失败:', err);
+            }
+        }
+
+        // 添加拍照音效函数
+        function playCameraSound() {
+            // 创建音频上下文
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+            
+            // 创建振荡器（模拟相机快门声）
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            // 配置声音参数
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(1500, audioCtx.currentTime); // 高频
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            
+            // 连接节点并播放
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            
+            // 快速衰减模拟快门声
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // 修改拍照函数
+        function takePhoto() {
+            playCameraSound(); // 添加音效
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            canvas.getContext('2d').drawImage(videoElement, 0, 0);
+            
+            // 创建包含照片和时间戳的容器
+            const photoContainer = document.createElement('div');
+            photoContainer.className = 'gallery-item';
+            
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL('image/png');
+            
+            // 创建时间显示元素
+            const timeStamp = document.createElement('div');
+            timeStamp.className = 'photo-time';
+            timeStamp.textContent = new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            photoContainer.appendChild(img);
+            photoContainer.appendChild(timeStamp);
+            gallery.insertBefore(photoContainer, gallery.firstChild);
+        }
+
+        // 更新倒计时显示
+        function updateCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            if(secondsRemaining > 0) {
+                countdownElement.textContent = `距离下次拍照：${secondsRemaining}秒`;
+                secondsRemaining--;
+            } else {
+                countdownElement.textContent = "";
+            }
+        }
+
+        // 事件监听
+        startButton.addEventListener('click', () => {
+            takePhoto();
+            secondsRemaining = 30; // 初始设置为30秒
+            updateCountdown();
+            captureInterval = setInterval(() => {
+                takePhoto();
+                secondsRemaining = 30; // 每次拍照后重置倒计时
+            }, 30000);
+            countdownInterval = setInterval(updateCountdown, 1000);
+            startButton.disabled = true;
+            stopButton.disabled = false;
+        });
+
+        stopButton.addEventListener('click', () => {
+            clearInterval(captureInterval);
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = "";
+            startButton.disabled = false;
+            stopButton.disabled = true;
+        });
+
+        // 新增立即拍照按钮事件
+        document.getElementById('instantSnap').addEventListener('click', takePhoto);
+
+        // 初始化
+        initCamera();
+    </script>
+</body>
+</html>
