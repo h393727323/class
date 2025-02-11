@@ -320,10 +320,12 @@
         <div style="border: 1px solid #eee; padding: 15px; border-radius: 8px;">
             <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                 <input 
-                    type="password" 
+                    type="text"
                     id="openaiKey" 
                     placeholder="请输入OpenAI API密钥"
                     style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                    autocomplete="one-time-code"
+                    oninput="this.type = this.value ? 'password' : 'text'"
                 >
                 <button onclick="localStorage.setItem('openaiKey', document.getElementById('openaiKey').value)" 
                         style="flex-shrink: 0; padding: 8px 16px; font-size: 13px; background: #4CAF50;">
